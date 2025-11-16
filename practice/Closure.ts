@@ -151,6 +151,36 @@ function createTimer() {
 // }, 5000);
 
 
+type Counter = {
+    increment: () => number,
+    decrement: () => number,
+    reset: () => number,
+}
+
+function createCounter(init: number): Counter {
+    let callableNumber = init | 0;
+
+    return {
+        increment () {
+            return callableNumber+=1;
+        },
+        decrement() {
+            return callableNumber-=1;
+        },
+        reset() {
+            return callableNumber = init;
+        }
+    }
+};
+
+/**
+ * const counter = createCounter(5)
+ * counter.increment(); // 6
+ * counter.reset(); // 5
+ * counter.decrement(); // 4
+ */
+
+
 //Debounce 
 
 
