@@ -123,3 +123,74 @@ getUserStat(1).then(stat => {
         console.log("Не удалось получить статистику");
     }
 });
+
+
+
+interface Todo {
+    "userId": number,
+    "id": number,
+    "title": string,
+    "completed": boolean
+}
+
+interface Stat {
+    id: number,
+    completed: number,
+    uncompleted: number,
+    copacity: number
+}
+
+
+async function getCompletedTodosByUser(userId: number): Promise<any> {
+    const resultPromise = new Promise<any>(async(res, rej) => {
+        const response  = await fetch("https://jsonplaceholder.typicode.com/todos");
+        if (!response) {
+            rej("Failed to fetch")
+            throw new Error ("Failed to fetch");
+        }
+        const data:Todo[] = await response.json();
+        const userCompletedTask = data.filter(task => task.userId===userId && task.completed === true);
+
+        if (userCompletedTask.length > 0 ) {
+            res (userCompletedTask);
+        } else {
+            rej("nothig found");
+        }
+    })
+    return resultPromise;
+}
+
+getCompletedTodosByUser(3)
+                        .then(res => console.log(res))
+                        .catch(error => console.log(error));
+
+
+async function getUsersStatistics(): Promise<Record<number, { total: number; completed: number; pending: number }>> {
+  const response = await fetch("https://jsonplaceholder.typicode.com/todos");
+  
+  if (!response.ok) {
+    throw new Error("Failed to fetch todos");
+  }
+
+  const todos = await response.json();
+
+  const stats: Record<number, { total: number; completed: number; pending: number }> = {};
+
+  for (const todo of todos) {
+    const userId = todo.userId;
+
+    if (!stats[userId]) {
+      stats[userId] = { total: 0, completed: 0, pending: 0 };
+    }
+
+    stats[userId].total++;
+    if (todo.completed) {
+      stats[userId].completed++;
+    } else {
+      stats[userId].pending++;
+    }
+  }
+  return stats;
+}
+
+getUsersStatistics().then(res=>console.log(res)).catch(error => console.log(error));

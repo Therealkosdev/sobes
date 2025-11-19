@@ -407,7 +407,97 @@ console.log(findKeyByValue(person, "Bob")); // null
 ```
 ## Фильтрации и сортировки (встроенные методы)
 
+### Find
+Ищет первый элемент, удовлетворяющий условию, и возвращает его. Если ничего не найдено — undefined. По факту работает как foreach -> объявляем переменную (по факту один элемент того что фильтруем) => условие
+
+```typescript
+
+```
+```typescript
+array.find((item, index, array) => условие);
+// array
+const nums = [10, 20, 30];
+const result = nums.find(n => n > 15); // 20
+
+//object
+const ages = { Alice: 25, Bob: 30, Carol: 22 };
+const entry = Object.entries(ages).find(([name, age]) => age > 25);
+console.log(entry); // ["Bob", 30]
+
+```
 ### Filter 
+Возвращает новый массив из элементов, которые прошли фильтр (условие true). Алгоритм такой же как и у find.
+```typescript
+const nums = [10, 20, 30];
+const filtered = nums.filter(n => n >= 20); // [20, 30]
+// объект
+const marks = { Alice: 85, Bob: 92, Charlie: 78 };
+const filtered = Object.entries(marks)
+  .filter(([name, grade]) => grade > 80);
+console.log(Object.fromEntries(filtered)); 
+// { Alice: 85, Bob: 92 }
+```
+### map()
+Создает новый массив, преобразовав каждый элемент по правилу. Так же как и цикл, объявляем значение (каждый айтем того над чем работаем)->условие изменения
+
+```typescript
+const nums = [1, 2, 3];
+const doubled = nums.map(n => n * 2); // [2, 4, 6]
+
+//Объект
+const products = { apple: 50, banana: 30, orange: 40 };
+const increased = Object.fromEntries(
+  Object.entries(products).map(([name, price]) => [name, price * 1.1])
+);
+console.log(increased); // { apple: 55, banana: 33, orange: 44 }
+```
+
+### reduce() 
+Сводит (аккумулирует) массив в одно значение.
+reduce((итог, элемент)=>[итог]действие[элемент], начальное значение итога (0 или ""))
+
+```typescript
+const nums = [10, 20, 30];
+const sum = nums.reduce((acc, n) => acc + n, 0); // 60
+
+
+const salaries = { John: 1000, Jane: 1500, Bob: 1200 };
+const totalSalary = Object.values(salaries).reduce((acc, sal) => acc + sal, 0);
+console.log(totalSalary); // 3700
+```
+
+### some()
+Проверяет, что хотя бы один элемент массива удовлетворяет условию.
+
+```typescript
+const nums = [1, 2, 3];
+const hasOdd = nums.some(n => n % 2 !== 0); // true
+
+const settings = { darkMode: true, notifications: false };
+const anyTrue = Object.values(settings).some(v => v === true); // true
+```
+
+### every()
+Проверяет, что все элементы массива удовлетворяют условию.
+
+```typescript
+const nums = [2, 4, 6];
+const allEven = nums.every(n => n % 2 === 0); // true
+
+const settings = { darkMode: true, isAdmin: false };
+const allEnabled = Object.values(settings).every(v => v === true); // false
+```
+Что и где использовать:
+| Задача                                         | Комбинация                                           |
+| ----------------------------------------------- | ---------------------------------------------------- |
+| Найти пару `[ключ, значение]` по значению       | `Object.entries().find()`                            |
+| Оставить только нужные пары                     | `Object.entries().filter()` → `Object.fromEntries()` |
+| Изменить все значения                           | `Object.entries().map()` → `Object.fromEntries()`    |
+| Получить сумму всех чисел                       | `Object.values().reduce()`                           |
+| Проверить, есть ли хотя бы одно значение `true` | `Object.values().some()`                             |
+| Проверить все значения                          | `Object.values().every()`                            |
+
+
 
 
 
