@@ -1,8 +1,772 @@
 # ООП в TypeScript - Полная методичка для собеседования
+Класс — это фундаментальное понятие объектно-ориентированного программирования (ООП). Класс можно представить как "чертеж" или "шаблон" для создания объектов. Он определяет структуру, свойства (атрибуты) и поведение (методы) объектов, которые создаются на его основе. Классы позволяют организовывать код в модульные, переиспользуемые блоки, делая программы более читаемыми и поддерживаемыми.
+Основные характеристики класса:
 
-## 1. Основы ООП - Четыре столпа
++ Атрибуты (поля или переменные): Данные, которые хранятся в объекте. Например, в классе "Автомобиль" атрибутами могут быть "марка", "цвет" и "скорость".
 
-### 1.1 Инкапсуляция (Encapsulation)
++ Методы (функции): Действия, которые может выполнять объект. Например, метод "завести двигатель" или "разогнаться".
+
++ Конструктор: Специальный метод, который вызывается при создании объекта для инициализации атрибутов.
+```typescript
+class User {
+    name: string;
+    age: number;
+    email: string;
+
+    constructor(name: string, age: number, email: string) {
+        this.name = name;
+        this.age = age;
+        this.email = email;
+    }
+
+    greet(): string {
+        return `Привет, меня зовут ${this.name}`;
+    }
+}
+
+// Создание экземпляра класса
+const user1 = new User("Лёха", 21, "lex@example.com");
+console.log(user1.greet()); // "Привет, меня зовут Лёха"
+```
+### Свойства класса (Properties):
+```typescript
+name: string;
+age: number;
+email: string;
+```
+Это поля класса - данные, которые будет хранить каждый объект. В TypeScript мы обязаны указать типы для каждого свойства.
+### Конструктор (Constructor)
+```typescript
+constructor(name: string, age: number, email: string) {
+    this.name = name;
+    this.age = age;
+    this.email = email;
+}
+```
+Что такое конструктор?
+Конструктор - это специальный метод, который автоматически вызывается при создании нового объекта через new User(...). Он нужен для инициализации объекта - установки начальных значений.
+Важные моменты:
+
+Название всегда constructor - это зарезервированное слово, другое название использовать нельзя
+
+В классе может быть только один конструктор - в отличие от некоторых языков, в TypeScript нельзя делать перегрузку конструкторов
+
+`this` - ключевое слово, которое ссылается на текущий создаваемый объект:
+```typescript
+this.name = name;
+   // ↑           ↑
+   // свойство    параметр
+   // объекта     конструктора
+```
+Что обязательно писать в конструкторе?
+
+Инициализацию всех свойств, которые объявлены в классе
+Если свойство не инициализировано, TypeScript выдаст ошибку
+Либо нужно пометить свойство как опциональное (name?: string) или дать дефолтное значение
+
+Конструктор не возвращает значение - он неявно возвращает созданный объект
+
+### Методы класса
+Это обычные функции, принадлежащие классу. Они имеют доступ к свойствам объекта через `this`.
+```typescript
+greet(): string {
+    return `Привет, меня зовут ${this.name}`;
+}
+```
+Это обычные функции, принадлежащие классу. Они имеют доступ к свойствам объекта через `this`.
+
+## Модификаторы доступа
+```typescript
+class BankAccount {
+    public accountNumber: string;      // доступен везде
+    private balance: number;           // доступен только внутри класса
+    protected owner: string;           // доступен в классе и наследниках
+
+    constructor(accountNumber: string, initialBalance: number, owner: string) {
+        this.accountNumber = accountNumber;
+        this.balance = initialBalance;
+        this.owner = owner;
+    }
+
+    // Публичный метод для получения баланса
+    public getBalance(): number {
+        return this.balance;
+    }
+
+    // Приватный метод для внутренней логики
+    private calculateInterest(): number {
+        return this.balance * 0.05;
+    }
+
+    // Публичный метод, использующий приватный
+    public addInterest(): void {
+        const interest = this.calculateInterest();
+        this.balance += interest;
+    }
+}
+
+const account = new BankAccount("123456", 1000, "Лёха");
+console.log(account.accountNumber); // ✅ работает
+console.log(account.getBalance());  // ✅ работает
+// console.log(account.balance);    // ❌ ошибка: balance приватный
+```
+
++ private защищает данные от случайного изменения извне
+
++ protected позволяет наследникам использовать поля родителя
+
++ public (по умолчанию) - стандартный доступ
+
+<strong>Сокращенный вид конструктора</strong>
+```typescript
+class Product {
+    // Не нужно объявлять свойства отдельно!
+    constructor(
+        public name: string,
+        public price: number,
+        private stock: number
+    ) {
+        // Не нужно писать this.name = name и т.д.
+        // TypeScript сделает это автоматически!
+    }
+
+    getStock(): number {
+        return this.stock;
+    }
+}
+
+const product = new Product("MacBook M4", 150000, 5);
+console.log(product.name);  // "MacBook M4"
+console.log(product.price); // 150000
+```
+## 2. Основы ООП - Четыре столпа
+
+### 2.1.1 Наследование (Inheritance)
+
+**Наследование** - механизм создания нового класса на основе существующего.
+```typescript
+// Базовый (родительский) класс
+class Animal {
+    constructor(
+        public name: string,
+        public age: number
+    ) {}
+
+    makeSound(): string {
+        return "Какой-то звук";
+    }
+
+    move(): string {
+        return `${this.name} движется`;
+    }
+}
+
+// Дочерний класс наследуется от Animal
+class Dog extends Animal {
+    constructor(
+        name: string,
+        age: number,
+        public breed: string  // Добавили новое свойство
+    ) {
+        super(name, age);  // ОБЯЗАТЕЛЬНО вызываем конструктор родителя!
+    }
+
+    // Переопределяем метод родителя
+    makeSound(): string {
+        return "Гав-гав!";
+    }
+
+    // Добавляем новый метод
+    fetch(): string {
+        return `${this.name} приносит мячик`;
+    }
+}
+
+const dog = new Dog("Рекс", 3, "Немецкая овчарка");
+console.log(dog.makeSound());  // "Гав-гав!" (переопределенный метод)
+console.log(dog.move());       // "Рекс движется" (унаследованный метод)
+console.log(dog.fetch());      // "Рекс приносит мячик" (новый метод)
+console.log(dog.breed);        // "Немецкая овчарка" (новое свойство)
+```
+Ключевое слово `super` - ОЧЕНЬ ВАЖНО!
+`super` используется в двух случаях:
+### 2.1.1.1 Вызов конструктора родителя
+```typescript
+class Dog extends Animal {
+    constructor(
+        name: string,
+        age: number,
+        public breed: string
+    ) {
+        // super ОБЯЗАТЕЛЬНО должен быть вызван ПЕРВЫМ в конструкторе!
+        super(name, age);
+        
+        // До вызова super нельзя использовать this
+        // this.breed = "test"; // ❌ Ошибка!
+        
+        // После super можно делать что угодно
+        console.log("Создана собака");
+    }
+}
+```
+Правила работы с super() в конструкторе:
+
++ ОБЯЗАТЕЛЬНО вызывать, если класс наследуется от другого класса
+
++ ОБЯЗАТЕЛЬНО вызывать ПЕРВЫМ в конструкторе (до любого использования this)
+
++ Передаем все параметры, которые ожидает конструктор родителя
+
++ Если родительский конструктор не вызван, TypeScript выдаст ошибку
+
+### 2.1.1.2 Вызов методов родителя
+```typescript
+class Cat extends Animal {
+    constructor(name: string, age: number) {
+        super(name, age);
+    }
+
+    makeSound(): string {
+        // Вызываем метод родителя
+        const parentSound = super.makeSound();
+        return `${parentSound} + Мяу-мяу!`;
+    }
+
+    move(): string {
+        // Можем дополнять логику родителя
+        const parentMove = super.move();
+        return `${parentMove} очень грациозно`;
+    }
+}
+
+const cat = new Cat("Мурка", 2);
+console.log(cat.makeSound());  // "Какой-то звук + Мяу-мяу!"
+console.log(cat.move());       // "Мурка движется очень грациозно"
+```
+Тут и работает модификатор `protected`, если есть свойство или метод `protected` у родителя, для инициализации его у child нужен конструктор
+ 
+### 1.2 Переопределение методов (Method Overriding)
+В дочернем классе, можем переопределять метод родителя и писать собственную реализацию
+```typescript
+class Shape {
+    constructor(public color: string) {}
+
+    getArea(): number {
+        return 0;  // Базовая реализация
+    }
+
+    describe(): string {
+        return `Фигура цвета ${this.color}`;
+    }
+}
+
+class Rectangle extends Shape {
+    constructor(
+        color: string,
+        public width: number,
+        public height: number
+    ) {
+        super(color);
+    }
+
+    // Полностью переопределяем метод
+    getArea(): number {
+        return this.width * this.height;
+    }
+
+    // Расширяем метод родителя
+    describe(): string {
+        const baseDescription = super.describe();
+        return `${baseDescription}, площадь: ${this.getArea()}`;
+    }
+}
+
+class Circle extends Shape {
+    constructor(
+        color: string,
+        public radius: number
+    ) {
+        super(color);
+    }
+
+    getArea(): number {
+        return Math.PI * this.radius ** 2;
+    }
+
+    describe(): string {
+        return `${super.describe()}, радиус: ${this.radius}`;
+    }
+}
+
+const rect = new Rectangle("красный", 10, 5);
+const circle = new Circle("синий", 7);
+
+console.log(rect.getArea());      // 50
+console.log(circle.getArea());    // 153.93...
+console.log(rect.describe());     // "Фигура цвета красный, площадь: 50"
+```
+### 2.1.1.3 Проверка типов с наследованием
+```typescript
+const dog = new Dog("Рекс", "Лабрадор");
+const animal = new Animal("Неизвестное животное", 5);
+
+// instanceof проверяет, является ли объект экземпляром класса
+console.log(dog instanceof Dog);      // true
+console.log(dog instanceof Animal);   // true (Dog наследуется от Animal)
+console.log(animal instanceof Dog);   // false
+
+// Можем безопасно приводить типы
+const animals: Animal[] = [
+    new Dog("Рекс", 3, "Лабрадор"),
+    new Cat("Мурка", 2),
+    new Animal("Хомяк", 1)
+];
+
+animals.forEach(animal => {
+    console.log(animal.makeSound());
+    
+    // Проверяем конкретный тип
+    if (animal instanceof Dog) {
+        console.log(animal.fetch());  // Метод доступен только у Dog
+    }
+});
+```
+
+**Mixins (альтернатива множественному наследованию):**
+
+```typescript
+// Mixin type
+type Constructor<T = {}> = new (...args: any[]) => T;
+
+// Mixin функция
+function Flyable<T extends Constructor>(Base: T) {
+  return class extends Base {
+    altitude: number = 0;
+    
+    fly() {
+      this.altitude = 100;
+      console.log('Flying at altitude:', this.altitude);
+    }
+  };
+}
+
+function Swimmable<T extends Constructor>(Base: T) {
+  return class extends Base {
+    depth: number = 0;
+    
+    swim() {
+      this.depth = 10;
+      console.log('Swimming at depth:', this.depth);
+    }
+  };
+}
+
+// Базовый класс
+class Animal {
+  constructor(public name: string) {}
+}
+
+// Применение mixins
+const FlyingSwimmingAnimal = Swimmable(Flyable(Animal));
+
+const duck = new FlyingSwimmingAnimal('Duck');
+duck.fly();  // "Flying at altitude: 100"
+duck.swim(); // "Swimming at depth: 10"
+```
+
+## 2.2 Абстракция
+### 2.2.1 Абстрактные классы (Abstract Classes)
+Абстрактный класс - это класс, который нельзя инстанциировать (создать экземпляр) напрямую. Он служит шаблоном для других классов.
+Важные правила абстрактных классов:
+
++ Объявляются с ключевым словом abstract
+
++ Нельзя создавать экземпляры напрямую
+
++ Могут содержать как обычные методы с реализацией, так и абстрактные без реализации
+
++ Абстрактные методы обязательно должны быть реализованы в дочерних классах
+
++ Могут иметь конструктор (для инициализации общих полей)
+
++ Могут иметь поля (свойства)
+
+```typescript
+abstract class Vehicle {
+    constructor(
+        public brand: string,
+        public model: string
+    ) {}
+
+    // Обычный метод с реализацией
+    getInfo(): string {
+        return `${this.brand} ${this.model}`;
+    }
+
+    // Абстрактный метод - БЕЗ реализации!
+    abstract start(): void;
+    abstract stop(): void;
+    abstract getMaxSpeed(): number;
+}
+
+// ❌ Ошибка! Нельзя создать экземпляр абстрактного класса
+// const vehicle = new Vehicle("Toyota", "Camry");
+
+// ✅ Правильно - наследуемся и реализуем абстрактные методы
+class Car extends Vehicle {
+    constructor(
+        brand: string,
+        model: string,
+        private engineType: string
+    ) {
+        super(brand, model);
+    }
+
+    // ОБЯЗАТЕЛЬНО реализуем все абстрактные методы
+    start(): void {
+        console.log(`${this.getInfo()}: Запуск двигателя (${this.engineType})`);
+    }
+
+    stop(): void {
+        console.log(`${this.getInfo()}: Остановка двигателя`);
+    }
+
+    getMaxSpeed(): number {
+        return 220;
+    }
+}
+
+class Motorcycle extends Vehicle {
+    constructor(brand: string, model: string) {
+        super(brand, model);
+    }
+
+    start(): void {
+        console.log(`${this.getInfo()}: Мотоцикл заведён`);
+    }
+
+    stop(): void {
+        console.log(`${this.getInfo()}: Мотоцикл заглушен`);
+    }
+
+    getMaxSpeed(): number {
+        return 180;
+    }
+}
+
+const car = new Car("BMW", "M5", "V8");
+const moto = new Motorcycle("Yamaha", "R1");
+
+car.start();                    // "BMW M5: Запуск двигателя (V8)"
+console.log(car.getMaxSpeed()); // 220
+```
+
+<strong>Применение</strong>
+```typescript
+abstract class DatabaseConnection {
+    constructor(protected connectionString: string) {}
+
+    // Общая логика для всех типов БД
+    log(message: string): void {
+        console.log(`[DB] ${message}`);
+    }
+
+    // Каждая БД реализует это по-своему
+    abstract connect(): Promise<void>;
+    abstract disconnect(): Promise<void>;
+    abstract executeQuery(query: string): Promise<any>;
+}
+
+class PostgresConnection extends DatabaseConnection {
+    async connect(): Promise<void> {
+        this.log(`Подключение к PostgreSQL: ${this.connectionString}`);
+        // Логика подключения к PostgreSQL
+    }
+
+    async disconnect(): Promise<void> {
+        this.log("Отключение от PostgreSQL");
+    }
+
+    async executeQuery(query: string): Promise<any> {
+        this.log(`Выполнение PostgreSQL запроса: ${query}`);
+        // Выполнение запроса
+        return [];
+    }
+}
+
+class MongoConnection extends DatabaseConnection {
+    async connect(): Promise<void> {
+        this.log(`Подключение к MongoDB: ${this.connectionString}`);
+        // Логика подключения к MongoDB
+    }
+
+    async disconnect(): Promise<void> {
+        this.log("Отключение от MongoDB");
+    }
+
+    async executeQuery(query: string): Promise<any> {
+        this.log(`Выполнение MongoDB запроса: ${query}`);
+        // Выполнение запроса
+        return [];
+    }
+}
+
+// Полиморфизм - можем работать с любой БД через общий тип
+async function runDatabase(db: DatabaseConnection) {
+    await db.connect();
+    await db.executeQuery("SELECT * FROM users");
+    await db.disconnect();
+}
+
+runDatabase(new PostgresConnection("postgres://localhost"));
+runDatabase(new MongoConnection("mongodb://localhost"));
+```
+
+## 2.2.2 Интерфейсы (Interfaces)
+Интерфейс - это чисто TypeScript конструкция, которая определяет контракт (набор свойств и методов), которые должен иметь объект. Интерфейсы полностью исчезают после компиляции в JavaScript.
+
+```typescript
+interface User {
+    id: number;
+    name: string;
+    email: string;
+    age?: number;  // опциональное свойство
+    
+    greet(): string;
+    updateEmail(newEmail: string): void;
+}
+
+// Класс реализует интерфейс
+class RegularUser implements User {
+    constructor(
+        public id: number,
+        public name: string,
+        public email: string,
+        public age?: number
+    ) {}
+
+    greet(): string {
+        return `Привет, я ${this.name}`;
+    }
+
+    updateEmail(newEmail: string): void {
+        this.email = newEmail;
+    }
+}
+
+class AdminUser implements User {
+    constructor(
+        public id: number,
+        public name: string,
+        public email: string,
+        public permissions: string[],  // Дополнительное свойство
+        public age?: number
+    ) {}
+
+    greet(): string {
+        return `Привет, я админ ${this.name}`;
+    }
+
+    updateEmail(newEmail: string): void {
+        console.log("Админ обновляет email");
+        this.email = newEmail;
+    }
+
+    // Дополнительный метод, которого нет в интерфейсе
+    grantPermission(permission: string): void {
+        this.permissions.push(permission);
+    }
+}
+
+const user: User = new RegularUser(1, "Лёха", "lex@example.com", 21);
+const admin: User = new AdminUser(2, "Админ", "admin@example.com", ["read", "write"]);
+```
+
+### Множественная имплементация интерфейсов
+Класс может реализовывать несколько интерфейсов одновременно! (В отличие от наследования, где можно наследоваться только от одного класса)
+```typescript
+interface Flyable {
+    fly(): void;
+    altitude: number;
+}
+
+interface Swimmable {
+    swim(): void;
+    depth: number;
+}
+
+interface Walkable {
+    walk(): void;
+}
+
+// Класс может реализовать несколько интерфейсов
+class Duck implements Flyable, Swimmable, Walkable {
+    altitude: number = 0;
+    depth: number = 0;
+
+    fly(): void {
+        this.altitude = 100;
+        console.log("Утка летит на высоте", this.altitude);
+    }
+
+    swim(): void {
+        this.depth = 2;
+        console.log("Утка плавает на глубине", this.depth);
+    }
+
+    walk(): void {
+        console.log("Утка ходит");
+    }
+}
+
+class Penguin implements Swimmable, Walkable {
+    depth: number = 0;
+
+    // Пингвин не летает, поэтому не реализует Flyable
+    
+    swim(): void {
+        this.depth = 50;
+        console.log("Пингвин ныряет на глубину", this.depth);
+    }
+
+    walk(): void {
+        console.log("Пингвин ходит вразвалку");
+    }
+}
+
+const duck = new Duck();
+duck.fly();
+duck.swim();
+duck.walk();
+```
+
+### Наследование интерфейсов
+Интерфейсы могут наследоваться друг от друга:
+
+```typescript
+interface Entity {
+    id: number;
+    createdAt: Date;
+}
+
+interface User extends Entity {
+    name: string;
+    email: string;
+}
+
+interface AdminUser extends User {
+    permissions: string[];
+    role: string;
+}
+
+// Можно наследовать от нескольких интерфейсов
+interface SuperAdmin extends AdminUser, Flyable {
+    superPowers: string[];
+}
+
+class Admin implements AdminUser {
+    // Нужно реализовать все поля из Entity, User и AdminUser
+    id: number;
+    createdAt: Date;
+    name: string;
+    email: string;
+    permissions: string[];
+    role: string;
+
+    constructor(id: number, name: string, email: string) {
+        this.id = id;
+        this.createdAt = new Date();
+        this.name = name;
+        this.email = email;
+        this.permissions = [];
+        this.role = "admin";
+    }
+}
+```
+### Интерфейсы для функций
+
+```typescript
+interface SearchFunction {
+    (query: string, limit: number): string[];
+}
+
+const searchUsers: SearchFunction = (query, limit) => {
+    console.log(`Поиск: ${query}, лимит: ${limit}`);
+    return ["user1", "user2"];
+};
+
+const result = searchUsers("Лёха", 10);
+```
+
+| Характеристика               | Абстрактный класс           | Интерфейс                       |
+|------------------------------|------------------------------|----------------------------------|
+| Ключевое слово               | abstract class               | interface                        |
+| Инстанциирование             | ❌ Нельзя создать экземпляр   | ❌ Нельзя создать экземпляр       |
+| Наследование / реализация    | extends (только один)        | implements (множественная)       |
+| Реализация методов           | ✅ Может содержать реализацию | ❌ Только сигнатуры методов       |
+| Конструктор                  | ✅ Может иметь конструктор    | ❌ Не может иметь конструктор     |
+| Поля со значениями           | ✅ Может иметь значения       | ❌ Только объявления типов        |
+| Модификаторы доступа         | ✅ public/private/protected   | ❌ Всё публично                   |
+| Компиляция в JS              | ✅ Компилируется в JS         | ❌ Полностью исчезает             |
+| Множественное наследование   | ❌ Только одно                | ✅ Можно несколько реализовать    |
+| Использование для типизации  | ✅ Можно использовать         | ✅ Можно использовать             |
+
+
+
+| Когда использовать | Интерфейс | Абстрактный класс |
+|--------------------|-----------|--------------------|
+| Нужен только контракт (без реализации) | ✅ Да | ❌ Нет |
+| Нужна множественная имплементация | ✅ Да | ❌ Нет |
+| Типизация объектов или параметров функций | ✅ Да | ✅ Да |
+| Нужна общая реализация (shared code) | ❌ Нет | ✅ Да |
+| Нужны protected/private поля | ❌ Нет | ✅ Да |
+| Нужен конструктор с логикой | ❌ Нет | ✅ Да |
+
+```typescript
+// ✅ Используй АБСТРАКТНЫЙ КЛАСС когда:
+abstract class PaymentProcessor {
+    constructor(protected apiKey: string) {}
+
+    // Общая логика для всех процессоров
+    protected log(message: string): void {
+        console.log(`[Payment] ${message}`);
+    }
+
+    // Обязательная реализация в наследниках
+    abstract processPayment(amount: number): Promise<boolean>;
+}
+
+// ✅ Используй ИНТЕРФЕЙС когда:
+interface Logger {
+    log(message: string): void;
+    error(message: string): void;
+}
+
+interface Cacheable {
+    getCacheKey(): string;
+    getCacheTTL(): number;
+}
+
+// Класс может реализовать оба интерфейса
+class UserService implements Logger, Cacheable {
+    log(message: string): void {
+        console.log(message);
+    }
+
+    error(message: string): void {
+        console.error(message);
+    }
+
+    getCacheKey(): string {
+        return "users";
+    }
+
+    getCacheTTL(): number {
+        return 3600;
+    }
+}
+```
+### 2.2 Инкапсуляция (Encapsulation)
 
 **Инкапсуляция** - сокрытие внутренней реализации и предоставление публичного интерфейса для взаимодействия.
 
@@ -50,33 +814,6 @@ console.log(account.getBalance()); // 1500
 // account.balance = 10000; // Ошибка! balance - приватное поле
 // account.calculateInterest(); // Ошибка! метод приватный
 ```
-
-**Модификаторы доступа в TypeScript:**
-
-```typescript
-class Example {
-  public publicField: string;      // доступен везде (по умолчанию)
-  private privateField: string;    // доступен только внутри класса
-  protected protectedField: string; // доступен в классе и наследниках
-  readonly readonlyField: string;  // только для чтения
-  
-  constructor() {
-    this.publicField = 'public';
-    this.privateField = 'private';
-    this.protectedField = 'protected';
-    this.readonlyField = 'readonly';
-  }
-}
-
-class Child extends Example {
-  showFields() {
-    console.log(this.publicField);    // ОК
-    console.log(this.protectedField); // ОК
-    // console.log(this.privateField); // Ошибка!
-  }
-}
-```
-
 **Геттеры и сеттеры:**
 
 ```typescript
@@ -106,161 +843,6 @@ const user = new User();
 user.age = 25; // вызывает setter
 console.log(user.age); // вызывает getter - 25
 console.log(user.isAdult); // true
-```
-
-### 1.2 Наследование (Inheritance)
-
-**Наследование** - механизм создания нового класса на основе существующего.
-
-```typescript
-// Базовый класс (родитель)
-class Animal {
-  protected name: string;
-  protected age: number;
-  
-  constructor(name: string, age: number) {
-    this.name = name;
-    this.age = age;
-  }
-  
-  public makeSound(): void {
-    console.log('Some generic animal sound');
-  }
-  
-  public move(distance: number): void {
-    console.log(`${this.name} moved ${distance} meters`);
-  }
-  
-  public getInfo(): string {
-    return `${this.name} is ${this.age} years old`;
-  }
-}
-
-// Производный класс (потомок)
-class Dog extends Animal {
-  private breed: string;
-  
-  constructor(name: string, age: number, breed: string) {
-    super(name, age); // вызов конструктора родителя
-    this.breed = breed;
-  }
-  
-  // Переопределение метода (override)
-  public makeSound(): void {
-    console.log('Woof! Woof!');
-  }
-  
-  // Дополнительный метод
-  public fetch(): void {
-    console.log(`${this.name} is fetching the ball`);
-  }
-  
-  // Переопределение с использованием super
-  public getInfo(): string {
-    return `${super.getInfo()}, breed: ${this.breed}`;
-  }
-}
-
-class Cat extends Animal {
-  public makeSound(): void {
-    console.log('Meow!');
-  }
-  
-  public scratch(): void {
-    console.log(`${this.name} is scratching`);
-  }
-}
-
-// Использование
-const dog = new Dog('Buddy', 3, 'Golden Retriever');
-dog.makeSound(); // "Woof! Woof!"
-dog.fetch(); // "Buddy is fetching the ball"
-console.log(dog.getInfo()); // "Buddy is 3 years old, breed: Golden Retriever"
-
-const cat = new Cat('Whiskers', 2);
-cat.makeSound(); // "Meow!"
-cat.scratch(); // "Whiskers is scratching"
-```
-
-**Множественное наследование через интерфейсы:**
-
-```typescript
-// TypeScript не поддерживает множественное наследование классов,
-// но можно реализовать несколько интерфейсов
-
-interface Flyable {
-  fly(): void;
-  maxAltitude: number;
-}
-
-interface Swimmable {
-  swim(): void;
-  maxDepth: number;
-}
-
-class Duck extends Animal implements Flyable, Swimmable {
-  maxAltitude: number = 1000;
-  maxDepth: number = 10;
-  
-  fly(): void {
-    console.log(`${this.name} is flying`);
-  }
-  
-  swim(): void {
-    console.log(`${this.name} is swimming`);
-  }
-  
-  makeSound(): void {
-    console.log('Quack!');
-  }
-}
-
-const duck = new Duck('Donald', 2);
-duck.fly();
-duck.swim();
-duck.makeSound();
-```
-
-**Mixins (альтернатива множественному наследованию):**
-
-```typescript
-// Mixin type
-type Constructor<T = {}> = new (...args: any[]) => T;
-
-// Mixin функция
-function Flyable<T extends Constructor>(Base: T) {
-  return class extends Base {
-    altitude: number = 0;
-    
-    fly() {
-      this.altitude = 100;
-      console.log('Flying at altitude:', this.altitude);
-    }
-  };
-}
-
-function Swimmable<T extends Constructor>(Base: T) {
-  return class extends Base {
-    depth: number = 0;
-    
-    swim() {
-      this.depth = 10;
-      console.log('Swimming at depth:', this.depth);
-    }
-  };
-}
-
-// Базовый класс
-class Animal {
-  constructor(public name: string) {}
-}
-
-// Применение mixins
-const FlyingSwimmingAnimal = Swimmable(Flyable(Animal));
-
-const duck = new FlyingSwimmingAnimal('Duck');
-duck.fly();  // "Flying at altitude: 100"
-duck.swim(); // "Swimming at depth: 10"
 ```
 
 ### 1.3 Полиморфизм (Polymorphism)
