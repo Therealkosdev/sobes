@@ -181,6 +181,102 @@ setCount(prev => prev + 1);
 
 ## 3. useEffect - побочные эффекты
 
+В React рендер должен быть чистым — без запросов, таймеров, подписок, логирования, работы с DOM.
+
+Но в реальных приложениях вам нужно:
+
++ сделать запрос к API,
+
++ подписаться на события (scroll, resize, websocket),
+
++ работать с localStorage,
+
++ запускать таймеры,
+
++ взаимодействовать с DOM
+
+Такие операции называются побочными эффектами.
+Для них и существует хук useEffect.
+
+```tsx
+useEffect(() => {
+// код эффекта
+}, []); // пустые зависимости
+```
+
++ [] → эффект выполняется один раз, при монтировании компонента.
+
++ [value] → эффект выполняется при первом рендере и каждый раз, когда меняется value.
+
++ отсутствие массива → эффект выполняется после каждого рендера.
+
+`Самый частый пример — запрос к API`:
+```tsx
+
+import { useEffect, useState } from "react";
+
+
+export default function Users() {
+const [users, setUsers] = useState([]);
+
+
+useEffect(() => {
+fetch("https://jsonplaceholder.typicode.com/users")
+.then(r => r.json())
+.then(data => setUsers(data));
+}, []);
+
+
+return (
+<ul>
+{users.map(u => <li key={u.id}>{u.name}</li>)}
+</ul>
+);
+}
+```
+Эффект запускается только при первом рендере.
+
+### Многие эффекты требуют очистки:
+
++ таймеры
+
++ подписки на события
+
++ WebSocket
+
++ интервалы
+
+```tsx
+useEffect(() => {
+const id = setInterval(() => {
+console.log("tick");
+}, 1000);
+
+
+return () => {
+clearInterval(id); // очищаем
+};
+}, []);
+```
+
+`Важно:` React вызывает очистку:
+
+при размонтировании компонента,
+
+перед повторным запуском эффекта.
+
+### useEffect и React.StrictMode
+
+В режиме разработки, если ваш проект обёрнут в:
+
+<React.StrictMode>
+
+React специально запускает эффект дважды, чтобы выявить ошибки в очистке.
+```<React.StrictMode>```
+В продакшене всё работает один раз.
+
+Это не баг → это инструмент для нахождения неправильных эффектов.
+
 ```tsx
 import { useState, useEffect } from 'react';
 
@@ -239,6 +335,371 @@ function DataFetcher() {
 - **Пустой массив `[]`**: выполняется только при монтировании
 - **С зависимостями `[a, b]`**: выполняется при изменении `a` или `b`
 - **Cleanup function**: возвращаемая функция выполняется при размонтировании или перед следующим эффектом
+
+
+
+# React — Учебный Курс (Часть 2)
+
+## Урок 5. useRef — доступ к DOM, хранение mutable-данных без ререндера
+
+### 1. Что такое useRef?
+
+`useRef` — это хук, который позволяет:
+
+* хранить **изменяемое значение**, которое *не вызывает ререндер* при изменении;
+* получать **доступ к DOM-элементам**;
+* хранить «состояние между рендерами», которое не влияет на UI.
+
+`useRef` возвращает объект вида:
+
+```ts
+{ current: значение }
+```
+
+Вы можете менять `current`, но React не будет перерисовывать компонент.
+
+---
+
+## 2. Основные случаи использования useRef
+
+### 📌 2.1. Доступ к DOM
+
+```tsx
+const inputRef = useRef<HTMLInputElement>(null);
+
+function App() {
+  const focus = () => {
+    inputRef.current?.focus();
+  };
+
+  return (
+    <div>
+      <input ref={inputRef} type="text" />
+      <button onClick={focus}>Фокус</button>
+    </div>
+  );
+}
+```
+
+### 📌 2.2. Хранение значения между рендерами
+
+```tsx
+const renderCount = useRef(0);
+
+useEffect(() => {
+  renderCount.current++;
+});
+```
+
+При изменении `renderCount.current` компонент **не рендерится заново**.
+
+### 📌 2.3. Хранение таймеров, интервалов, подписок
+
+```tsx
+const timer = useRef<NodeJS.Timeout | null>(null);
+
+const start = () => {
+  timer.current = setInterval(() => console.log("tick"), 1000);
+};
+```
+
+---
+
+## 3. Чем отличается useRef от useState?
+
+| useRef                                     | useState                          |
+| ------------------------------------------ | --------------------------------- |
+| Данные можно менять без рендера            | Любое изменение вызывает ререндер |
+| Идеально для хранения «служебных» значений | Идеально для отображаемых данных  |
+| Используется для DOM                       | Используется для UI               |
+
+Простой пример отличия:
+
+```tsx
+const count = useRef(0); // меняем без рендера
+const [value, setValue] = useState(0); // рендер
+```
+
+---
+
+## 4. Управляемые и неуправляемые компоненты
+
+`useRef` позволяет использовать **неуправляемые формы**, когда React не хранит значения input.
+
+### Пример неуправляемой формы
+
+```tsx
+const inputRef = useRef<HTMLInputElement>(null);
+
+const submit = () => {
+  alert(inputRef.current?.value);
+};
+
+return (
+  <>
+    <input ref={inputRef} />
+    <button onClick={submit}>Отправить</button>
+  </>
+);
+```
+
+Это быстрее и проще, чем `useState`, когда форма не требует живого обновления.
+
+---
+
+## 5. Ошибки при использовании useRef
+
+### ❌ 1. Ожидать, что ref вызовет ререндер
+
+```tsx
+count.current++;
+// UI НЕ обновится
+```
+
+### ❌ 2. Доступ к DOM до рендера
+
+```tsx
+console.log(inputRef.current); // будет null
+```
+
+### ❌ 3. Попытка мемоизации ref
+
+ref — всегда один и тот же объект, мемоизация не нужна.
+
+---
+
+## 6. Практика
+
+### Задание
+
+Создай компонент `Timer`:
+
+* кнопка «Старт» запускает таймер;
+* кнопка «Стоп» останавливает;
+* значение таймера выводится на экран;
+* интервал хранится в `useRef`.
+
+Подсказка:
+
+```tsx
+timer.current = setInterval(() => setValue(v => v + 1), 1000);
+```
+
+---
+
+Скажи «давай дальше» — и начнём **Урок 6: Контекст (Context API)**
+
+# Урок 6. Context API — глобальное состояние без проп-дриллинга
+
+## 1. Зачем нужен контекст?
+
+В React данные обычно передаются сверху вниз через **props**. Но если много вложенных компонентов — возникает проблема:
+
+* один компонент должен передать данные «вниз», но сам их не использует;
+* цепочка пропсов растёт → **prop drilling**.
+
+Чтобы избежать этого, используется **Context API**, позволяющий:
+
+* создать глобальное состояние;
+* предоставить его любым компонентам без пропсов.
+
+---
+
+## 2. Как работает Context API
+
+Контекст состоит из трёх частей:
+
+1. **Context** — создаётся через `createContext`.
+2. **Provider** — компонент, который предоставляет значение.
+3. **Consumer** — компонент, который получает значение через `useContext`.
+
+---
+
+## 3. Простейший пример контекста
+
+### Шаг 1: создаём контекст
+
+```tsx
+import { createContext } from "react";
+
+interface ThemeContextType {
+  theme: "light" | "dark";
+  toggleTheme: () => void;
+}
+
+export const ThemeContext = createContext<ThemeContextType | null>(null);
+```
+
+### Шаг 2: создаём провайдер
+
+```tsx
+export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
+  const [theme, setTheme] = useState<"light" | "dark">("light");
+
+  const toggleTheme = () => {
+    setTheme(prev => (prev === "light" ? "dark" : "light"));
+  };
+
+  return (
+    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+      {children}
+    </ThemeContext.Provider>
+  );
+};
+```
+
+### Шаг 3: используем контекст внутри компонентов
+
+```tsx
+const ThemeSwitcher = () => {
+  const ctx = useContext(ThemeContext);
+
+  if (!ctx) return null;
+
+  return (
+    <button onClick={ctx.toggleTheme}>
+      Тема: {ctx.theme}
+    </button>
+  );
+};
+```
+
+### Шаг 4: оборачиваем приложение в провайдер
+
+```tsx
+root.render(
+  <ThemeProvider>
+    <App />
+  </ThemeProvider>
+);
+```
+
+Теперь любой компонент внутри `<ThemeProvider>` может получать тему.
+
+---
+
+## 4. Структура вложения контекстов
+
+В больших приложениях часто бывает много провайдеров:
+
+```tsx
+<AuthProvider>
+  <ThemeProvider>
+    <SettingsProvider>
+      <App />
+    </SettingsProvider>
+  </ThemeProvider>
+</AuthProvider>
+```
+
+Это называют **Provider Tree**.
+
+---
+
+## 5. Производительность и проблемы контекста
+
+Контекст мощный, но есть ограничения:
+
+### ⛔ Проблема: любой Consumer рендерится при обновлении контекста
+
+Если значение контекста меняется → все потребители ререндерятся.
+
+### Решения:
+
+* мемоизировать значения, передаваемые в Provider:
+
+```tsx
+const value = useMemo(() => ({ theme, toggleTheme }), [theme]);
+```
+
+* разбивать контекст на несколько маленьких;
+* использовать `useReducer` вместе с контекстом.
+
+---
+
+## 6. Контекст + useReducer (правильный паттерн)
+
+Обычно контекст используется не с useState, а с useReducer.
+
+### Пример:
+
+```tsx
+interface State {
+  user: string | null;
+}
+
+const initialState: State = { user: null };
+
+function reducer(state: State, action: { type: string; payload?: any }) {
+  switch (action.type) {
+    case "login":
+      return { user: action.payload };
+    case "logout":
+      return { user: null };
+    default:
+      return state;
+  }
+}
+```
+
+Провайдер:
+
+```tsx
+const AuthContext = createContext<any>(null);
+
+export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const [state, dispatch] = useReducer(reducer, initialState);
+
+  return (
+    <AuthContext.Provider value={{ state, dispatch }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
+```
+
+Потребление:
+
+```tsx
+const { state, dispatch } = useContext(AuthContext);
+```
+
+Теперь можно делать:
+
+```tsx
+dispatch({ type: "login", payload: "Alex" });
+```
+
+Это очень распространённый паттерн.
+
+---
+
+## 7. Практическое задание
+
+Создай контекст `LanguageContext`, который хранит:
+
+* текущий язык (`"ru" | "en"`)
+* функцию `setLanguage(lang)`
+
+И используй его в двух компонентах:
+
+* `<LanguageSwitcher />` — переключает язык
+* `<Welcome />` — отображает приветствие на выбранном языке
+
+Подсказка:
+
+```tsx
+const text = {
+  ru: "Привет!",
+  en: "Hello!",
+};
+```
+
+---
+
+Скажи *«давай дальше»* — и мы перейдём к **Уроку 7: useReducer** — самому мощному хуку для управления состоянием.
+
+
 
 ## 4. useRef - ссылки на DOM элементы и хранение значений
 
