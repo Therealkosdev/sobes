@@ -830,30 +830,64 @@ h1 {
 
 ## 7. Селекторы CSS
 
-### 7.1 Базовые селекторы
+# CSS Шпаргалка: селекторы, псевдоклассы и псевдоэлементы (полная версия)
+
+Готово к копированию — один файл, всё внутри.
+
+## Базовые селекторы детей
 
 ```css
-/* Селектор тега */
-div { }
-p { }
+/* Первый дочерний элемент */
+li:first-child { color: red; }
 
-/* Селектор класса */
-.classname { }
-.class-name { }
+/* Последний дочерний элемент */
+li:last-child { color: blue; }
 
-/* Селектор ID */
-#id-name { }
+/* По номеру, odd/even, формулы */
+li:nth-child(2)          { color: green; }
+li:nth-child(odd)        { background: #f9f9f9; }
+li:nth-child(even)       { background: #efefef; }
+li:nth-child(3n)         { font-weight: bold; }     /* каждый 3-й */
+li:nth-child(3n+1)       { color: orange; }        /* 1, 4, 7… */
 
-/* Универсальный селектор */
-* {
-  box-sizing: border-box;
-}
+/* Отсчёт с конца */
+li:nth-last-child(1)     { color: purple; }
+li:nth-last-child(2)     { margin-bottom: 20px; }
 
-/* Группировка селекторов */
-h1, h2, h3 {
-  font-family: Arial;
-}
+/* Прямой потомок (только дети, не внуки) */
+.container > p           { color: red; }
+
+/* Сосед сразу после */
+h2 + p                   { margin-top: 0; }
+
+/* Все следующие соседи на том же уровне */
+h2 ~ p                   { color: gray; }
+
 ```
+
+### Полезные комбинации
+
+```css
+/* Всё кроме первого и последнего */
+li:not(:first-child):not(:last-child) { background: #f2f2f2; }
+
+/* Hover только у активных кнопок */
+button:not(:disabled):hover { background: #0066ff; color: #fff; }
+
+/* Зебра в таблице */
+tr:nth-child(even)       { background: #fafafa; }
+
+/* Отступы между карточками (без первого) */
+.card + .card            { margin-top: 30px; }
+
+/* Убрать margin у последнего параграфа */
+p:last-child,
+p:not(:last-child)       { margin-bottom: 20px; }
+p:last-child             { margin-bottom: 0; }
+```
+
+
+
 
 ### 7.2 Комбинаторы
 
@@ -947,6 +981,90 @@ input:out-of-range { } /* значение вне диапазона */
 :root { } /* корневой элемент (html) */
 :target { } /* элемент, на который указывает якорь в URL */
 :lang(en) { } /* элемент с указанным языком */
+```
+
+### Популярные готовые паттерны
+
+```css
+/* 1. Плашка SALE / NEW */
+.product::before {
+  content: "SALE";
+  position: absolute;
+  top: 10px; right: 10px;
+  background: red;
+  color: white;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+/* 2. Кастомный чекбокс */
+.checkbox {
+  display: none;
+}
+.checkbox + label {
+  position: relative;
+  padding-left: 30px;
+  cursor: pointer;
+}
+.checkbox + label::before {
+  content: "";
+  position: absolute;
+  left: 0; top: 0;
+  width: 20px; height: 20px;
+  border: 2px solid #333;
+  background: white;
+}
+.checkbox:checked + label::after {
+  content: "✓";
+  position: absolute;
+  left: 3px; top: -2px;
+  color: green;
+  font-weight: bold;
+}
+
+/* 3. Декоративная вертикальная линия */
+.card {
+  position: relative;
+  padding-left: 20px;
+}
+.card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 4px;
+  height: 100%;
+  background: #3498db;
+  border-radius: 4px;
+}
+
+/* 4. Кавычки у цитат */
+blockquote {
+  position: relative;
+  padding: 20px 40px;
+}
+blockquote::before {
+  content: "“";
+  position: absolute;
+  left: 10px; top: 10px;
+  font-size: 60px;
+  color: #ddd;
+}
+blockquote::after {
+  content: "”";
+  position: absolute;
+  right: 10px; bottom: -20px;
+  font-size: 60px;
+  color: #ddd;
+}
+
+/* 5. Стрелочка в меню */
+.menu-item::after {
+  content: "›";
+  margin-left: 8px;
+  opacity: 0.6;
+}
 ```
 
 ### 7.4 Псевдоэлементы
