@@ -194,3 +194,41 @@ async function getUsersStatistics(): Promise<Record<number, { total: number; com
 }
 
 getUsersStatistics().then(res=>console.log(res)).catch(error => console.log(error));
+
+
+//own promise all
+
+type Fn<T> = () => Promise<T>
+type AsyncFunc = () => Promise<any>;
+
+function promiseAll<T>(functions: AsyncFunc[]): Promise<any[]> {
+  return new Promise((resolve,reject)=> {
+    if (functions.length === 0) {
+        resolve([]);
+        return;
+    }
+
+    const result: any[] = new Array(functions.length);
+    let completed: number = 0;
+
+    functions.forEach((funcItem, funcIndex)=> {
+        Promise.resolve(funcItem())
+                .then((functionRes)=> {
+                    result[funcIndex] = functionRes;
+                    completed++;
+
+                    if(completed === functions.length) {
+                        resolve(result);
+                    }
+                })
+                .catch((error)=> {
+                    reject(error)
+                })
+    })
+  })
+}
+
+/**
+ * const promise = promiseAll([() => new Promise(res => res(42))])
+ * promise.then(console.log); // [42]
+ */
