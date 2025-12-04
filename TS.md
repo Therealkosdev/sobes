@@ -90,8 +90,6 @@ const pizza = ["slice1", "slice2", "slice3", "slice4"];
 
 ### nullish coalescing `??`
 
-```typescript
-```
 Если значение пусто (null или undefined), используй запасной вариант.
 ```typescript
 const age = userAge ?? 10;
