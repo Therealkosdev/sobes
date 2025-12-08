@@ -175,7 +175,7 @@ export const appRouter = router({ hello: publicProcedure.query(() => 'Hello!') }
 Клиент → Сервер: SYN
 Сервер → Клиент: SYN-ACK
 Клиент → Сервер: ACK
-
+```
 
 
 # WebSocket и Sockets: Подробное объяснение
@@ -183,6 +183,7 @@ export const appRouter = router({ hello: publicProcedure.query(() => 'Hello!') }
 ## 1. Что такое **Socket**? (Общее понятие)
 
 ### Определение
+
 **Сокет** — это программный интерфейс для обмена данными между процессами через сеть.  
 Сокет — это **конечная точка (endpoint)** сетевого соединения.
 
