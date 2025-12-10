@@ -232,3 +232,52 @@ function promiseAll<T>(functions: AsyncFunc[]): Promise<any[]> {
  * const promise = promiseAll([() => new Promise(res => res(42))])
  * promise.then(console.log); // [42]
  */
+
+
+
+
+type Yoo = {
+    retries: number
+    timeout: number
+}
+
+function wait(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function retryFetch(url: string, cfg: Yoo): Promise<Response> {
+    const { retries, timeout } = cfg;
+    let counter = 0;
+
+    while (counter <= retries) {
+        try {
+            const res = await fetch(url);
+
+            // Если fetch сработал, но сервер вернул ошибку — тоже считаем ошибкой
+            if (!res.ok) {
+                throw new Error(`HTTP error: ${res.status}`);
+            }
+
+            return res; // успех — выходим
+        } catch (err) {
+            if (counter === retries) {
+                throw new Error(`Failed after ${retries + 1} attempts: ${err}`);
+            }
+
+            console.warn(`Attempt ${counter + 1} failed, retrying in ${timeout}ms...`);
+            counter++;
+
+            await wait(timeout);
+        }
+    }
+
+    // По логике код никогда сюда не дойдёт
+    throw new Error("Unexpected error");
+}
+// retryFetch("https://jsonplaceholder.typicode.com/todos/1", {
+//     retries: 3,
+//     timeout: 1000
+// })
+// .then(res => res.json())
+// .then(data => console.log("Success:", data))
+// .catch(err => console.error("Failed:", err));

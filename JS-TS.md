@@ -4162,7 +4162,7 @@ fetch('/api/endpoint', {
   }
 });
 
-// 3. Content Security Policy
+// 3. Content Security Policy 
 // В HTML:
 // <meta http-equiv="Content-Security-Policy" 
 //       content="default-src 'self'; script-src 'self' 'unsafe-inline'">
