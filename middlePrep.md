@@ -2,65 +2,6 @@
 
 ## 1. React: Современные хуки и паттерны
 
-### Streaming и Suspense в Next.js
-
-Streaming и Suspense — это мощные механизмы в Next.js, которые позволяют улучшить производительность и пользовательский опыт, отправляя контент частями по мере его готовности, вместо того чтобы ждать полной загрузки всей страницы.
-
-#### Что такое Streaming?
-
-Streaming позволяет разбивать HTML-страницу на части (chunks) и постепенно отправлять их клиенту. Это значит, что пользователь быстрее увидит начальный контент, пока остальные части страницы ещё загружаются.
-
-#### Suspense в Next.js
-React Suspense позволяет показывать fallback UI (например, скелетон или спиннер) пока асинхронный компонент загружается. В Next.js 13+ с App Router это работает "из коробки".
-
-```typescript
-import { Suspense } from 'react';
-
-// Компонент с асинхронной загрузкой данных
-async function UserData() {
-  const res = await fetch('https://api.example.com/user', {
-    cache: 'no-store'
-  });
-  const user = await res.json();
-  
-  return (
-    <div>
-      <h2>{user.name}</h2>
-      <p>{user.email}</p>
-    </div>
-  );
-}
-
-// Главная страница
-export default function Page() {
-  return (
-    <div>
-      <h1>Профиль пользователя</h1>
-      <Suspense fallback={<div>Загрузка данных пользователя...</div>}>
-        <UserData />
-      </Suspense>
-    </div>
-  );
-}
-```
-
-
-Преимущества Streaming
-
-+ Улучшенная производительность — пользователь видит контент быстрее
-+ Лучший UX — показываются skeleton'ы вместо пустой страницы
-+ Параллельная загрузка — разные части страницы загружаются независимо
-+ SEO-дружественность — поисковые системы получают контент по мере его готовности
-
-Практические советы
-
-+ Оборачивайте в Suspense только те компоненты, которые действительно медленно загружаются
-+ Используйте осмысленные fallback'и (скелетоны вместо спиннеров)
-+ Группируйте связанные компоненты в один Suspense boundary
-+ Для критичного контента не используйте Suspense, чтобы он загрузился сразу
-
-Streaming и Suspense делают Next.js приложения быстрее и отзывчивее, особенно при работе с внешними API или базами данных.
-
 ### useState
 Базовый хук для локального состояния компонента.
 
@@ -2291,7 +2232,500 @@ function LoginForm() {
           { type: 'email', message: 'Invalid email!' }
         ]}
       >
-        <Input />
+        <Input.Password />
+      </Form.Item>
+      
+      <Form.Item>
+        <Button type="primary" htmlType="submit" block>
+          Login
+        </Button>
+      </Form.Item>
+    </Form>
+  );
+}
+```
+
+**Кастомизация темы:**
+```typescript
+import { ConfigProvider } from 'antd';
+
+function App() {
+  return (
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: '#00b96b',
+          borderRadius: 2,
+        },
+      }}
+    >
+      <YourApp />
+    </ConfigProvider>
+  );
+}
+```
+
+**Сложные компоненты (Table):**
+```typescript
+import { Table } from 'antd';
+import type { ColumnsType } from 'antd/es/table';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  age: number;
+}
+
+const columns: ColumnsType<User> = [
+  {
+    title: 'Name',
+    dataIndex: 'name',
+    key: 'name',
+    sorter: (a, b) => a.name.localeCompare(b.name),
+  },
+  {
+    title: 'Email',
+    dataIndex: 'email',
+    key: 'email',
+  },
+  {
+    title: 'Age',
+    dataIndex: 'age',
+    key: 'age',
+    sorter: (a, b) => a.age - b.age,
+  },
+];
+
+function UsersTable({ users }: { users: User[] }) {
+  return <Table columns={columns} dataSource={users} rowKey="id" />;
+}
+```
+
+**Плюсы Ant Design:**
+- Идеален для админок и dashboards
+- Мощная Table с сортировкой, фильтрацией, pagination
+- Много готовых компонентов
+- Хорошая документация
+
+**Минусы Ant Design:**
+- Специфичный дизайн
+- Большой bundle size
+- Меньше гибкости в кастомизации чем shadcn/ui
+
+**Когда использовать:**
+- Admin панели, CRM, ERP системы
+- Нужны сложные таблицы
+- B2B приложения
+
+### Chakra UI
+
+**Что это:**
+- Модульная и accessible component library
+- Styled-system подход
+- Фокус на Developer Experience
+
+**Установка:**
+```bash
+npm install @chakra-ui/react @emotion/react @emotion/styled framer-motion
+```
+
+**Использование:**
+```typescript
+import { ChakraProvider, Button, Input, Stack, Box } from '@chakra-ui/react';
+
+function App() {
+  return (
+    <ChakraProvider>
+      <Box p={8}>
+        <Stack spacing={4}>
+          <Input placeholder="Email" size="lg" />
+          <Input placeholder="Password" type="password" size="lg" />
+          <Button colorScheme="blue" size="lg">
+            Login
+          </Button>
+        </Stack>
+      </Box>
+    </ChakraProvider>
+  );
+}
+```
+
+**Responsive props:**
+```typescript
+import { Box, Text } from '@chakra-ui/react';
+
+function ResponsiveBox() {
+  return (
+    <Box
+      p={{ base: 4, md: 8, lg: 12 }}
+      bg={{ base: 'red.100', md: 'blue.100', lg: 'green.100' }}
+    >
+      <Text fontSize={{ base: 'md', md: 'lg', lg: 'xl' }}>
+        Responsive text
+      </Text>
+    </Box>
+  );
+}
+```
+
+**Кастомизация темы:**
+```typescript
+import { extendTheme } from '@chakra-ui/react';
+
+const theme = extendTheme({
+  colors: {
+    brand: {
+      50: '#f7fafc',
+      500: '#1a365d',
+      900: '#1a202c',
+    },
+  },
+  fonts: {
+    heading: 'Inter, sans-serif',
+    body: 'Inter, sans-serif',
+  },
+});
+
+function App() {
+  return (
+    <ChakraProvider theme={theme}>
+      <YourApp />
+    </ChakraProvider>
+  );
+}
+```
+
+**Плюсы Chakra UI:**
+- Отличный DX (Developer Experience)
+- Accessibility из коробки
+- Responsive props очень удобны
+- Хорошая документация
+
+**Минусы Chakra UI:**
+- Средний bundle size
+- Специфичный API (нужно привыкнуть)
+
+**Когда использовать:**
+- Быстрая разработка
+- Важна accessibility
+- Нравится styled-system подход
+
+### Mantine
+
+**Что это:**
+- Современная React UI библиотека
+- Много хуков и утилит
+- Отличная TypeScript поддержка
+
+**Установка:**
+```bash
+npm install @mantine/core @mantine/hooks
+```
+
+**Использование:**
+```typescript
+import { MantineProvider, Button, TextInput, Stack } from '@mantine/core';
+
+function App() {
+  return (
+    <MantineProvider>
+      <Stack spacing="md" p="xl">
+        <TextInput label="Email" placeholder="your@email.com" />
+        <TextInput label="Password" type="password" />
+        <Button fullWidth>Login</Button>
+      </Stack>
+    </MantineProvider>
+  );
+}
+```
+
+**Полезные хуки:**
+```typescript
+import { useForm } from '@mantine/form';
+import { useDisclosure } from '@mantine/hooks';
+
+function MyForm() {
+  const [opened, { open, close }] = useDisclosure(false);
+  
+  const form = useForm({
+    initialValues: {
+      email: '',
+      password: '',
+    },
+    validate: {
+      email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
+    },
+  });
+  
+  return <form onSubmit={form.onSubmit(console.log)}>...</form>;
+}
+```
+
+**Плюсы Mantine:**
+- Современный дизайн
+- Много полезных хуков
+- Хорошая TypeScript поддержка
+- Активное развитие
+
+**Минусы Mantine:**
+- Меньше известен чем MUI
+- Средний bundle size
+
+### Сравнительная таблица
+
+| Библиотека | Bundle Size | Компонентов | Кастомизация | Accessibility | Use Case |
+|------------|-------------|-------------|--------------|---------------|----------|
+| **MUI** | Большой (~300KB) | 100+ | Средняя | Отличная | Enterprise |
+| **shadcn/ui** | Маленький (по требованию) | 50+ | Полная | Отличная | Современные SaaS |
+| **Ant Design** | Большой (~400KB) | 70+ | Средняя | Хорошая | Admin панели |
+| **Chakra UI** | Средний (~150KB) | 50+ | Хорошая | Отличная | Быстрая разработка |
+| **Mantine** | Средний (~200KB) | 100+ | Хорошая | Хорошая | Универсальная |
+
+### Важные вопросы на собеседовании
+
+**Q: Как выбрать UI-библиотеку для проекта?**
+A: Зависит от:
+- Требований к дизайну (свой vs готовый)
+- Bundle size constraints
+- Навыков команды (знание Tailwind для shadcn/ui)
+- Типа проекта (админка → Ant Design, landing → shadcn/ui)
+- Accessibility требований
+- Необходимости кастомизации
+
+**Q: Как оптимизировать bundle size при использовании UI-библиотек?**
+A: 
+- Tree-shaking (импорт только нужных компонентов)
+- Code splitting (lazy loading страниц)
+- Использовать легкие альтернативы (shadcn/ui вместо MUI)
+- Dynamic imports для редко используемых компонентов
+
+**Q: Accessibility в UI-библиотеках?**
+A: Важно чтобы библиотека поддерживала:
+- ARIA attributes
+- Keyboard navigation
+- Focus management
+- Screen reader support
+- Лучшие: MUI, Chakra UI, shadcn/ui (Radix UI)
+
+## 7. Дополнительные важные темы
+
+### TypeScript best practices в React
+
+**Типизация пропсов:**
+```typescript
+interface ButtonProps {
+  children: React.ReactNode;
+  onClick?: () => void;
+  variant?: 'primary' | 'secondary';
+  disabled?: boolean;
+}
+
+// Или с type
+type ButtonProps = {
+  children: React.ReactNode;
+  onClick?: () => void;
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
+
+function Button({ children, onClick, ...props }: ButtonProps) {
+  return <button onClick={onClick} {...props}>{children}</button>;
+}
+```
+
+**Generics в компонентах:**
+```typescript
+interface ListProps<T> {
+  items: T[];
+  renderItem: (item: T) => React.ReactNode;
+}
+
+function List<T>({ items, renderItem }: ListProps<T>) {
+  return <ul>{items.map(renderItem)}</ul>;
+}
+
+// Использование
+<List 
+  items={users} 
+  renderItem={(user) => <li key={user.id}>{user.name}</li>}
+/>
+```
+
+**Типизация событий:**
+```typescript
+function MyForm() {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+  };
+  
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log(e.target.value);
+  };
+  
+  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
+    console.log(e.currentTarget);
+  };
+  
+  return <form onSubmit={handleSubmit}>...</form>;
+}
+```
+
+### Performance оптимизация
+
+**React.memo:**
+```typescript
+const ExpensiveComponent = React.memo(({ data }: { data: Data }) => {
+  return <div>{/* expensive render */}</div>;
+});
+
+// С кастомным сравнением
+const ExpensiveComponent = React.memo(
+  ({ data }: { data: Data }) => <div>...</div>,
+  (prevProps, nextProps) => prevProps.data.id === nextProps.data.id
+);
+```
+
+**useMemo и useCallback (когда использовать):**
+```typescript
+// ❌ Не нужен useMemo
+const sum = useMemo(() => a + b, [a, b]); // Слишком дешёвая операция
+
+// ✅ Нужен useMemo
+const filteredList = useMemo(() => {
+  return hugeList.filter(item => item.category === category);
+}, [hugeList, category]);
+
+// ❌ Не нужен useCallback
+const handleClick = useCallback(() => {
+  console.log('clicked');
+}, []); // Используется только в этом компоненте
+
+// ✅ Нужен useCallback
+const MemoizedChild = memo(Child);
+const handleClick = useCallback(() => {
+  doSomething();
+}, []); // Передаётся в мемоизированный компонент
+```
+
+**Code Splitting:**
+```typescript
+import { lazy, Suspense } from 'react';
+
+const HeavyComponent = lazy(() => import('./HeavyComponent'));
+
+function App() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <HeavyComponent />
+    </Suspense>
+  );
+}
+```
+
+### Testing (базовое понимание)
+
+**React Testing Library:**
+```typescript
+import { render, screen, fireEvent } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+
+test('button click updates text', async () => {
+  const user = userEvent.setup();
+  render(<Counter />);
+  
+  const button = screen.getByRole('button', { name: /increment/i });
+  await user.click(button);
+  
+  expect(screen.getByText('Count: 1')).toBeInTheDocument();
+});
+```
+
+### Основные концепции для собеседования
+
+**1. React рендеринг:**
+- Reconciliation (Virtual DOM)
+- Fiber architecture
+- Batching updates
+- Commit phase vs Render phase
+
+**2. Next.js:**
+- SSR vs SSG vs ISR vs CSR
+- Server Components vs Client Components
+- App Router vs Pages Router
+- Streaming и Suspense
+
+**3. State Management:**
+- Local state (useState)
+- Server state (React Query)
+- Global state (Context, Zustand)
+- Form state (React Hook Form)
+
+**4. Performance:**
+- React.memo, useMemo, useCallback
+- Code splitting
+- Image optimization
+- Web Vitals (LCP, FID, CLS)
+
+**5. TypeScript:**
+- Generics в компонентах
+- Типизация пропсов и событий
+- Utility types (Partial, Pick, Omit)
+
+---
+
+## Финальные советы к собеседованию
+
+### Как отвечать на технические вопросы
+
+1. **Структурируйте ответ:**
+   - Что это? (определение)
+   - Зачем нужно? (проблема, которую решает)
+   - Как использовать? (пример кода)
+   - Альтернативы и компромиссы
+
+2. **Примеры из опыта:**
+   - "В прошлом проекте мы использовали React Query для..."
+   - "Столкнулись с проблемой X, решили через Y"
+
+3. **Не бойтесь сказать "не знаю":**
+   - "С этим не работал, но думаю это работает так..."
+   - "Слышал про это, но в продакшне не использовал"
+
+4. **Задавайте уточняющие вопросы:**
+   - "Вас интересует Server Components или Client Components?"
+   - "Говорим про Pages Router или App Router?"
+
+### Типичные вопросы на собеседовании
+
+**React:**
+- Чем отличается useEffect от useLayoutEffect?
+- Когда использовать useReducer вместо useState?
+- Что такое reconciliation?
+- Как работает виртуальный DOM?
+- Что такое React Fiber?
+
+**Next.js:**
+- Чем отличается SSR от SSG?
+- Что такое ISR?
+- Как работают Server Components?
+- Чем App Router отличается от Pages Router?
+- Как организовать data fetching в Next.js?
+
+**Performance:**
+- Как оптимизировать рендеринг большого списка?
+- Когда использовать React.memo?
+- Как измерить производительность React приложения?
+
+**TypeScript:**
+- Как типизировать компонент с generic пропсами?
+- В чём разница interface vs type?
+- Что такое utility types?
+
+**React Query:**
+- Как работает кэширование в React Query?
+- Что такое optimistic updates?
+- Чем отличается staleTime от gcTime?
+
+Удачи на собеседовании! 🚀 />
       </Form.Item>
       
       <Form.Item
