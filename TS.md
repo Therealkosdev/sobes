@@ -672,10 +672,209 @@ const newBag = structuredClone(bag);
 | `{ ...obj }` или `Object.assign()` | Поверхностная копия | Когда точно знаешь, что внутри нет вложенных объектов |
 
 
+## utility types
+
+1. `Partial<T>`
+
+Делает все поля типа необязательными.
+
+```ts
+type User = {
+  id: number
+  name: string
+  email: string
+}
+
+type UserUpdate = Partial<User>
+
+```
 
 
+Когда использовать
+
++ PATCH-запросы
+
++ формы редактирования
+
++ частичное обновление сущности
+
+2. `Required<T>`
+
+Обратный `Partial` — все поля становятся обязательными.
+
+```ts
+type UserOptional = {
+  id?: number
+  name?: string
+}
+
+type UserStrict = Required<UserOptional>
+```
+
+3. `Pick<T, K>`
+
+Берёт только указанные поля из типа.
 
 
+```ts
+type UserPreview = Pick<User, "id" | "name">
+
+```
+
+Результат:
+```ts
+{
+  id: number
+  name: string
+}
+
+```
+
+📌 Когда
+
++ DTO
+
++ отображение краткой информации
+
+4. `Omit<T, K>`
+
+Берёт всё, кроме указанных полей.API-ответы
+```ts
+type UserWithoutEmail = Omit<User, "email">
+```
+
+📌 Часто используется
+
++ скрыть служебные поля (password, createdAt)
+
++ клиентские модели
+
+
+5. `Record<K, T>`
+
+Создаёт объект, где:
+
++ ключи — K
+
++ значения — T
+
+
+```ts
+type Roles = "admin" | "user" | "guest"
+
+type RolePermissions = Record<Roles, string[]>
+```
+
+```ts
+{
+  admin: string[]
+  user: string[]
+  guest: string[]
+}
+```
+
+
+📌 Когда
+
++ словари
+
++ конфигурации
+
++ мапы
+
+
+6. `Readonly<T>`
+
+Запрещает изменение полей.
+
+```ts
+type ReadonlyUser = Readonly<User>
+
+const user: ReadonlyUser = {
+  id: 1,
+  name: "Alex",
+  email: "a@mail.com"
+}
+
+// user.name = "Ivan" ❌
+```
+
+7. `Exclude<T, U>`
+
+Убирает из union-типа элементы из U.
+
+```ts
+type Status = "loading" | "success" | "error"
+
+type WithoutError = Exclude<Status, "error">
+```
+
+8. `Extract<T, U>`
+
+Наоборот — оставляет только пересечение.
+
+```ts
+type WithError = Extract<Status, "error" | "success">
+```
+
+9. `NonNullable<T>`
+
+Убирает `null` и `undefined`.
+
+type Value = string | null | undefined
+
+```ts
+type Clean = NonNullable<Value>
+// string
+```
+
+10. `ReturnType<T>`
+
+Получает тип возвращаемого значения функции.
+
+
+```ts
+function getUser() {
+  return { id: 1, name: "Alex" }
+}
+
+type UserFromFn = ReturnType<typeof getUser>
+```
+
+
+11. `Parameters<T>`
+
+Типы аргументов функции в виде tuple.
+
+```ts
+function login(email: string, password: string) {}
+
+type LoginArgs = Parameters<typeof login>
+// [string, string]
+```
+
+12. `Awaited<T>`
+Распаковывает Promise.
+
+```ts
+type Data = Awaited<Promise<string>>
+// string
+```
+
+| Тип           | Что делает            |
+| ------------- | --------------------- |
+| `Partial`     | Все поля optional     |
+| `Required`    | Все поля required     |
+| `Pick`        | Взять поля            |
+| `Omit`        | Убрать поля           |
+| `Record`      | Объект-словарь        |
+| `Readonly`    | Только чтение         |
+| `Exclude`     | Убрать из union       |
+| `Extract`     | Оставить из union     |
+| `NonNullable` | Убрать null/undefined |
+| `ReturnType`  | Тип результата        |
+| `Parameters`  | Тип аргументов        |
+| `Awaited`     | Распаковка Promise    |
 
 
 
