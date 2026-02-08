@@ -617,18 +617,81 @@ function HomePage() {
 
 **Структура папок:**
 ```
-app/
-├── page.tsx              # / route
-├── layout.tsx            # Layout для всех страниц
-├── loading.tsx           # Loading UI
-├── error.tsx             # Error boundary
-├── not-found.tsx         # 404 страница
-├── about/
-│   └── page.tsx          # /about route
-└── blog/
-    ├── [slug]/
-    │   └── page.tsx      # /blog/[slug] dynamic route
-    └── page.tsx          # /blog route
+my-project/
+├── public/                        # статические файлы, доступны по корневому пути
+│   ├── favicon.ico
+│   ├── robots.txt
+│   ├── images/                    # картинки, логотипы, og-изображения
+│   └── fonts/                     # ← если НЕ используешь @next/font/local
+│
+├── src/                           # основной исходный код (рекомендую всегда использовать src/)
+│   ├── app/                       # App Router — сердце приложения
+│   │   ├── (auth)/                # группа маршрутов без префикса в URL (например /login, /register)
+│   │   │   ├── login/
+│   │   │   └── register/
+│   │   ├── [lang]/                # динамический сегмент для локализации (i18n)
+│   │   │   ├── layout.tsx
+│   │   │   ├── page.tsx
+│   │   │   └── (dashboard)/       # подгруппа внутри [lang]
+│   │   ├── api/                   # Route Handlers (API-роуты)
+│   │   │   └── users/
+│   │   │       └── route.ts
+│   │   ├── globals.scss           # глобальные стили (или globals.css)
+│   │   ├── layout.tsx             # корневой layout (самый верхний)
+│   │   ├── page.tsx               # главная страница (/)
+│   │   └── not-found.tsx          # 404 страница
+│   │
+│   ├── components/                # переиспользуемые UI-компоненты
+│   │   ├── ui/                    # атомарные / примитивные компоненты (Button, Input, Card, Modal...)
+│   │   ├── layout/                # крупные куски layout (Header, Footer, Sidebar, Main...)
+│   │   ├── features/              # фича-ориентированные компоненты (UserAvatar, ProductCard...)
+│   │   └── shared/                # очень общие вещи (Logo, ThemeSwitcher...)
+│   │
+│   ├── lib/                       # не-React логика, утилиты, не привязанные к компонентам
+│   │   ├── api.ts                 # axios/fetch инстанс, базовые запросы
+│   │   ├── auth.ts                # next-auth / lucia / supabase auth helpers
+│   │   ├── constants.ts           # MAGIC_NUMBER = 42, API_URL и т.п.
+│   │   └── db.ts                  # prisma клиент / drizzle / knex инстанс
+│   │
+│   ├── hooks/                     # кастомные React hooks
+│   │   ├── useDebounce.ts
+│   │   ├── useLocalStorage.ts
+│   │   └── useMediaQuery.ts
+│   │
+│   ├── i18n/                      # интернационализация
+│   │   ├── config.ts              # i18next / next-intl конфиг
+│   │   └── locales/
+│   │       ├── ru/
+│   │       └── en/
+│   │
+│   ├── fonts/                     # локальные шрифты для @next/font/local
+│   │   └── Mb-font.woff2
+│   │
+│   ├── styles/                    # если хочется вынести SCSS за пределы app/
+│   │   ├── base/
+│   │   ├── components/
+│   │   └── utilities/
+│   │
+│   ├── types/                     # глобальные TypeScript типы
+│   │   ├── index.d.ts
+│   │   ├── api.ts                 # типы ответов от бэкенда
+│   │   └── next-auth.d.ts         # расширения типов next-auth
+│   │
+│   ├── utils/                     # очень маленькие, чистые, независимые утилиты
+│   │   ├── cn.ts                  # classnames / clsx + tailwind-merge
+│   │   ├── formatDate.ts
+│   │   ├── slugify.ts
+│   │   └── validators.ts          # zod-схемы или простые проверки
+│   │
+│   └── middleware.ts              # (в корне src/) — middleware Next.js
+│
+├── .env.local                     # локальные переменные окружения
+├── .env.example                   # шаблон для других разработчиков
+├── next.config.mjs / .ts
+├── tsconfig.json
+├── package.json
+├── tailwind.config.ts             # если используешь tailwind
+└── README.md
 ```
 
 ### Server Components vs Client Components
